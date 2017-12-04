@@ -1,4 +1,6 @@
 import React from 'react';
+import axios from 'axios';
+
 
 import Header from './components/Header';
 import Todo from './components/Todo';
@@ -19,8 +21,8 @@ class App extends React.Component {
     }
 
     componentDidMount(){
-        fetch('http://localhost:3000/api/todos')
-            .then(response => response.json())
+        axios.get('http://localhost:3000/api/todos')
+            .then(response => response.data)
             .then(todos => this.setState({ todos }))
             .catch(error => console.error(error.message));
     }
