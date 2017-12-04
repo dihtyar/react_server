@@ -24,56 +24,64 @@ class App extends React.Component {
         axios.get('http://localhost:3000/api/todos')
             .then(response => response.data)
             .then(todos => this.setState({ todos }))
-            .catch(error => console.error(error.message));
+            .catch(this.handleError);
     }
 
     handleAdd(title) {
-        const todo = {
-            id: this.nextId(),
-            title,
-            completed: false
-        };
+        axios.post('/api/todos', {title})
+            .then(response => response.data)
+            .then(todo =>{
+                const todos = [...this.state.todos, todo];
+                this.setState({ todos });
+            })
+            .catch(this.handleError);
+    }
 
-        const todos = [...this.state.todos, todo];
-
-        this.setState({ todos });
-    } 
-
-    handleDelete(id) {
-        const todos = this.state.todos.filter(todo => todo.id !== id);
-
-        this.setState({ todos });
+    handleDelete(id){
+        axios.delete(`/api/todos/${id}`)
+            .then(() => {
+                const todos = this.state.todos.filter(todo => todo.id !== id);
+                this.setState({ todos });
+            })
+            .catch(this.handleError);
     }
 
     handleToggle(id) {
-        const todos = this.state.todos.map(todo => {
-            if (todo.id === id) {
-                todo.completed = !todo.completed;
-            }
-
-            return todo;
-        });
-
-        this.setState({ todos });
+        axios.patch(`/api/todos/${id}`)
+            .then(response => {
+                const todos = this.state.todos.map(todo => {
+                    if (todo.id === id) {
+                        todo = response.data;
+                    }
+                    return todo;
+                });
+                this.setState({ todos });
+            })
+            .catch(this.handleError);
     }
 
     handleEdit(id, title) {
-        const todos = this.state.todos.map(todo => {
-            if (todo.id === id) {
-                todo.title = title;
-            }
+        axios.put(`/api/todos/${id}`,{title})
+            .then(response =>{
+                const todos = this.state.todos.map(todo => {
+                    if (todo.id === id) {
+                        todo = response.data;
+                    }
+                    return todo;
+                });
+                this.setState({ todos });
+            })
+            .catch(this.handleError);
+    }
 
-            return todo;
-        });
-
-        this.setState({ todos });
+    handleError(error){
+        console.error(error);
     }
 
     render() {
         return (
             <main>
                 <Header todos={this.state.todos} />
-
                 <section className="todo-list">
                     {this.state.todos.map(todo => 
                         <Todo
@@ -87,7 +95,6 @@ class App extends React.Component {
                         />)
                     }
                 </section>
-
                 <Form onAdd={this.handleAdd} />
             </main>
         );
